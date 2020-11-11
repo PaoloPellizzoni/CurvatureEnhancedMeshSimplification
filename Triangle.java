@@ -7,6 +7,7 @@ public class Triangle implements Comparable<Triangle>
     final int hash;
     final double area;
     final double[] angle;
+    final boolean degenerate;
 
     public Triangle(Vertex v1, Vertex v2, Vertex v3){
         vertices = new Vertex[3];
@@ -23,6 +24,10 @@ public class Triangle implements Comparable<Triangle>
         angle[0] = Vector.getAngle(edge1, edge2);
         angle[1] = Vector.getAngle(edge1, edge3);
         angle[2] = Vector.getAngle(edge3, edge2.mul(-1));
+        
+        degenerate = Double.isNaN(angles[0]) || Double.isInfinite(angles[0])
+                  || Double.isNaN(angles[1]) || Double.isInfinite(angles[1])
+                  || Double.isNaN(angles[2]) || Double.isInfinite(angles[2]);
         
         hash = Arrays.deepHashCode(vertices);
     }
@@ -67,9 +72,7 @@ public class Triangle implements Comparable<Triangle>
 
     public boolean isDegenerate()
     {
-        return ((vertices[0].equals(vertices[1]))||
-                (vertices[1].equals(vertices[2]))||
-                (vertices[2].equals(vertices[0])));
+        return degenerate;
     }
 
     public int compareTo(Triangle t){
