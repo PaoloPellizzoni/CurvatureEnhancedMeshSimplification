@@ -56,6 +56,13 @@ class STLReader
         return triangles;
     }
 
+    public static short color(int r, int g, int b) {
+        r = Math.max(Math.min(r, 31), 0);
+        g = Math.max(Math.min(g, 31), 0);
+        b = Math.max(Math.min(b, 31), 0);
+        return (short)(1024 * r + 32 * g + 1 * b);
+    }
+    
     public static void writeMesh(Mesh mesh, String path)
     {
         try{
@@ -96,9 +103,20 @@ class STLReader
             buf.rewind();
 
             buf.clear();
-            header=new byte[50];         //blue...
-            int[] colors = new int[]{    (1024*24+32*0+0), (1024*31+32*0+0), (1024*31+32*15+0), (1024*31+32*31+0), (1024*15+32*31+0),
-                                        (1024*0+32*31+0), (1024*0+32*31+15), (1024*0+32*31+31), (1024*0+32*15+31), (1024*0+32*0+31)}; //...red
+            header=new byte[50];         
+
+            // scan triangles to find range of error values
+            double errorMax = Double.MIN_VALUE;
+            double errorMin = Double.MAX_VALUE;
+            for(Triangle t : mesh.triangles) {
+                double error = Math.log(1 - Math.pow(2, -t.curv()*EdgePair.alpha));
+                if(Double.isNaN(error) || Double.isInfinite(error)) continue;
+                errorMax = Math.max(error, errorMax);
+                errorMin = Math.min(error, errorMin);
+            }
+            double errorSpan = errorMax - errorMin;
+            if(errorSpan == 0) errorSpan = 1;
+            
             for(Triangle t : mesh.triangles) {
 
                 buf.rewind();
@@ -119,7 +137,20 @@ class STLReader
                 buf.putFloat((float)t.vertices[2].v.x);
                 buf.putFloat((float)t.vertices[2].v.y);
                 buf.putFloat((float)t.vertices[2].v.z);
-                buf.putShort( (short)colors[Math.min( Math.max((int)(10*(1- Math.pow(2, -t.curv()*EdgePair.alpha))), 0 ), 9)] );
+                
+                // choose color: NaN=black, Infinite=white, errors in range=red to green
+                double e = Math.log(1 - Math.pow(2, -t.curv() * EdgePair.alpha));
+                if(Double.isNaN(e) || Double.isInfinite(e)) {
+                    t.curv();
+                }
+                short c;
+                if(Double.isInfinite(e)) c = color(31,31,31);
+                else if(Double.isNaN(e)) c = color(0,0,0);
+                else {
+                    e = (e - errorMin) / errorSpan;
+                    c = color((int)(31 * 2 * e), (int)(31 * 2 * (1-e)), 0);
+                }
+                buf.putShort(c);
                 
                 buf.rewind();
                 buf.get(header);
