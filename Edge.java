@@ -74,9 +74,7 @@ class EdgePair implements Comparable<EdgePair>
 
     public int compareTo(EdgePair ep)
     {
-        if(Math.abs(this.error - ep.error) > 10e-15)
-            return (this.error - ep.error)>0 ? 1 : -1;
-        return e.hashCode() - ep.hashCode(); //random
+        return (this.error - ep.error)>0 ? 1 : -1;
     }
 
     public boolean equals(Object o)
