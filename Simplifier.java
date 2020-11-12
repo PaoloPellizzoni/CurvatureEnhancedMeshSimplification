@@ -169,6 +169,7 @@ public class Simplifier
 
                 ep.isRemoved = true;
                 edgeQueue.remove(ep); //logn
+                edgeMap.remove(ep.edge);
                 if(!v1.equals(v2)){
                     Edge newE = new Edge(v1, v2);
                     if(!edgeMap.containsKey(newE)){
