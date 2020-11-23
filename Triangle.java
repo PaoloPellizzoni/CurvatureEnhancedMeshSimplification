@@ -27,7 +27,8 @@ public class Triangle implements Comparable<Triangle>
         
         degenerate = Double.isNaN(angles[0]) || Double.isInfinite(angles[0])
                   || Double.isNaN(angles[1]) || Double.isInfinite(angles[1])
-                  || Double.isNaN(angles[2]) || Double.isInfinite(angles[2]);
+                  || Double.isNaN(angles[2]) || Double.isInfinite(angles[2])
+                  || area == 0;
         
         hash = Arrays.deepHashCode(vertices);
     }
